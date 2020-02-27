@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Document</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <video autoplay></video>
+  <script>
+    function onSuccess(stream) {
+      console.log("success!, we have a stream");
+      videoArea.srcObject = stream;
+      videoArea.className = "grayscale_filter";
+      videoArea.play();
+    }
+
+    function onError(error) {
+      console.log("error", error);
+    }
+
+    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    var constrains = {audio: false, video: {
+      mandatory: {
+        minWidth: 640,
+        maxWidth: 640,
+        minHeight: 320,
+        maxHeight: 480
+      }
+      }};
+    var videoArea = document.querySelector("video");
+    navigator.getUserMedia(constrains, onSuccess, onError);
+
+  </script>
+</body>
+</html>
