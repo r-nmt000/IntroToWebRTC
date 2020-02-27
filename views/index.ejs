@@ -5,8 +5,61 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div>
+    Video: <select id="camera"></select>
+  </div>
   <video autoplay></video>
   <script>
+    var videoArea = document.querySelector("video");
+    var videoSelect = document.querySelector("#camera");
+
+    // Mediastreamtrack.getsources is no longer supported
+    // instead, we use mediaDevices.enumerateDevices to get mic, camera, audio devices
+    navigator.mediaDevices.enumerateDevices()
+            .then(function(devices) {
+                appendCameras(devices);
+            })
+    .catch(function(error) {
+      console.log(error);
+    });
+
+    videoSelect.onchange = startStream;
+
+    startStream();
+
+    function appendCameras(sourceInfos) {
+      for (var i = 0; i !== sourceInfos.length; i++) {
+        var sourceInfo = sourceInfos[i];
+        var option = document.createElement('option');
+        option.value = sourceInfo.id;
+        if (sourceInfo.kind == 'videoinput') {
+          option.text = sourceInfo.label || 'camera' + (videoSelect.length + 1);
+          videoSelect.appendChild(option);
+        }
+      }
+    }
+    function startStream() {
+      navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+      var videoSource = videoSelect.value;
+      var constrains = {audio: false,
+        video: {
+          mandatory: {
+            minWidth: 640,
+            maxWidth: 640,
+            minHeight: 320,
+            maxHeight: 480
+          },
+            // this is needed for apply which video refer to
+          optional: [
+            {
+              sourceId: videoSource
+            }
+          ]
+        }};
+      navigator.getUserMedia(constrains, onSuccess, onError);
+
+    }
+
     function onSuccess(stream) {
       console.log("success!, we have a stream");
       videoArea.srcObject = stream;
@@ -18,17 +71,6 @@
       console.log("error", error);
     }
 
-    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-    var constrains = {audio: false, video: {
-      mandatory: {
-        minWidth: 640,
-        maxWidth: 640,
-        minHeight: 320,
-        maxHeight: 480
-      }
-      }};
-    var videoArea = document.querySelector("video");
-    navigator.getUserMedia(constrains, onSuccess, onError);
 
   </script>
 </body>
